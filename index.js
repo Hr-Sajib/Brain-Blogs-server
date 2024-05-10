@@ -52,6 +52,7 @@ async function run() {
     //collections
     const BlogsCollection = client.db('BrainBlogs').collection('blogs');
     const CommentsCollection = client.db('BrainBlogs').collection('comments');
+    const WishedCollection = client.db('BrainBlogs').collection('wishlist');
 
 
 
@@ -101,9 +102,70 @@ async function run() {
     // add comment
     app.post('/addComment', async(req,res)=>{
         const comment = req.body;
-        console.log(comment);
+
+        const r = await CommentsCollection.insertOne(comment)
+        res.send(r);
 
     })
+
+    // get comments of specific blog
+    app.get('/getComments/:id', async(req,res)=>{
+        const id = req.params.id;
+        
+        const query = {blogId : id}
+        const result = await CommentsCollection.find(query).toArray();
+
+        res.send(result);
+    })
+
+
+    //wishlist add blogs
+    app.post('/addToWishlist', async(req,res)=>{
+        const newWished = req.body;
+        const r = await WishedCollection.insertOne(newWished)
+        res.send(r);
+
+    })
+    //get all wishlist data
+    app.get('/getWishlist/:userEmail', async(req,res)=>{
+        const email = req.params.userEmail;
+        console.log(email);
+        const cursor = {userEmail : email}
+
+        const query = WishedCollection.find(cursor);
+        const r = await query.toArray();
+
+        res.send(r);
+    })
+
+
+
+    //update own art
+    app.put('/update/:id', async(req,res)=>{
+        const id = req.params.id;
+        const blog = req.body;
+
+        const query = {_id: new ObjectId(id)};
+
+        const updatedBlog = {
+            $set:{
+                title : blog.title ,
+                category : blog.category ,
+                short_description : blog.short_description ,
+                long_description : blog.long_description ,
+                userEmail : blog.userEmail ,
+                imageurl : blog.imageurl ,
+                time : blog.time ,
+            }
+        }
+
+        const options ={ upsert : true};
+
+        const result = await BlogsCollection.updateOne(query, updatedBlog, options );
+        res.send(result);
+
+    })
+
 
 
 
