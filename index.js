@@ -128,7 +128,7 @@ async function run() {
 
 
 
-    //wishlist add blogs
+    // wishlist add blogs
     app.put('/addToWishlist', async(req,res)=>{
         const newWished = req.body;
         const email = newWished.userEmail;
@@ -148,7 +148,7 @@ async function run() {
     })
 
 
-    //get all wishlist data
+    // get all wishlist data
     app.get('/getWishlist/:userEmail', async(req,res)=>{
         const email = req.params.userEmail;
         console.log(email);
