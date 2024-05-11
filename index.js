@@ -119,13 +119,35 @@ async function run() {
     })
 
 
+
+
+
+
+
+
+
+
+
     //wishlist add blogs
-    app.post('/addToWishlist', async(req,res)=>{
+    app.put('/addToWishlist', async(req,res)=>{
         const newWished = req.body;
-        const r = await WishedCollection.insertOne(newWished)
-        res.send(r);
+        const email = newWished.userEmail;
+
+        const query = {userEmail : email};
+
+        const updatedArray = {
+            $set:{
+                ids : newWished.ids
+            }
+        }
+        const options ={ upsert : true};
+
+        const result = await WishedCollection.updateOne(query, updatedArray, options );
+        res.send(result);
 
     })
+
+
     //get all wishlist data
     app.get('/getWishlist/:userEmail', async(req,res)=>{
         const email = req.params.userEmail;
@@ -137,6 +159,17 @@ async function run() {
 
         res.send(r);
     })
+
+
+
+
+
+
+
+
+
+
+
 
 
 
