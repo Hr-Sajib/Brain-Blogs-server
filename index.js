@@ -90,9 +90,8 @@ async function run() {
           res.
           cookie( 'token', token ,{
             httpOnly:true,
-            secure:false,
+            secure:true,
             sameSite: 'none',
-            maxAge: 3600000 // 1 hour in milliseconds
         })
         .send({success:true})
     });
@@ -134,10 +133,16 @@ async function run() {
         const query = BlogsCollection.find();
         const r = await query.toArray();
 
-        console.log('token in getBlogs received: ',req.cookies);
+        console.log('token in getBlogs received: ',req.cookies.token);
 
         res.send(r);
     })
+
+
+
+
+
+
 
     // get specific blog
     app.get('/getBlogDetails/:id', async(req, res)=>{
@@ -148,6 +153,23 @@ async function run() {
 
         res.send(r);
     })
+
+    //get searched blog
+    // app.get('getSearchedBlog/:text',async(req,res)=>{
+    //         const searchText = req.params.text;
+            
+    //         // Perform text search using MongoDB's $text operator
+    //         const query = {
+    //             $text: {
+    //                 $search: searchText
+    //         }
+    //     };
+    //     const cursor = BlogsCollection.find(query);
+    //     const results = await cursor.toArray();
+
+    //     res.send(results);
+        
+    // })
 
 
 
