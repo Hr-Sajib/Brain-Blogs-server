@@ -16,12 +16,12 @@ const port = process.env.PORT || 5500;
 // middlewires
 app.use(cors(
     {
-        origin: ['http://localhost:5173'],
+        origin: ['https://brain-blogs.web.app'],
         credentials:true
     }
 ));
 
-
+// 'http://localhost:5173', 
 
 app.use(bodyParser.json());
 
@@ -57,9 +57,11 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
+
+
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
 
@@ -86,6 +88,13 @@ async function run() {
         const token = jwt.sign({ email: userEmail }, process.env.access_token_secret, {expiresIn: '1h'});
         console.log('Generated token:', token);
       
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+          };
+          //localhost:5000 and localhost:5173 are treated as same site.  so sameSite value must be strict in development server.  in production sameSite will be none
+          // in development server secure will false .  in production secure will be true
        
           res.
           cookie( 'token', token ,{
