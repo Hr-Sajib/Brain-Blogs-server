@@ -3,6 +3,8 @@ const cors = require('cors');
 require('dotenv').config()
 const bodyParser = require('body-parser');
 const { ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
+
 
 
 
@@ -12,8 +14,21 @@ const port = process.env.PORT || 5500;
 
 
 // middlewires
-app.use(cors());
+app.use(cors(
+    {
+        origin: ['http://localhost:5173'],
+        credentials:true
+    }
+));
+
+
+
 app.use(bodyParser.json());
+
+//cookie parser
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 
 
 app.get('/', (req,res)=>{
@@ -60,6 +75,41 @@ async function run() {
 
 
 
+
+    //auth api
+
+    app.post('/jwt', async(req,res)=>{
+        const userEmail = req.body.email;
+        console.log('userEmail recieved in jwt post',userEmail);
+
+         // Generate JWT token
+        const token = jwt.sign({ email: userEmail }, process.env.access_token_secret, {expiresIn: '1h'});
+        console.log('Generated token:', token);
+      
+       
+          res.
+          cookie( 'token', token ,{
+            httpOnly:true,
+            secure:false,
+            sameSite: 'none',
+            maxAge: 3600000 // 1 hour in milliseconds
+        })
+        .send({success:true})
+    });
+
+
+    
+    
+    
+      
+
+
+
+
+
+
+
+ 
 // services api
 
     
@@ -83,6 +133,8 @@ async function run() {
     app.get('/getBlogs', async(req,res)=>{
         const query = BlogsCollection.find();
         const r = await query.toArray();
+
+        console.log('token in getBlogs received: ',req.cookies);
 
         res.send(r);
     })
