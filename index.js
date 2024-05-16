@@ -16,12 +16,13 @@ const port = process.env.PORT || 5500;
 // middlewires
 app.use(cors(
     {
-        origin: ['https://brain-blogs.web.app'],
+        origin: ['http://localhost:5173', 'https://brain-blogs.web.app', 'brain-blogs.firebaseapp.com'],
         credentials:true
     }
 ));
 
-// 'http://localhost:5173', 
+
+// 
 
 app.use(bodyParser.json());
 
@@ -36,8 +37,6 @@ app.get('/', (req,res)=>{
 })
 
 
-//Brain-blogs
-//JTYY7y5bhFHCWKSc
 
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
@@ -53,6 +52,32 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+
+//midllewires
+const logger =async(req,res,next)=>{
+    console.log('called  ',req.host, req.originalUrl);
+    next();
+}
+
+const verifyToken = async(req,res,next)=>{
+    const token = req.cookies?.token;
+    console.log("middleware token : ",token);
+
+    if(!token){
+        return res.status(401).send({message:'Not Authorized'})
+    }
+    jwt.verify(token, process.env.access_token_secret, (err,decoded)=>{
+         if(err){
+            return res.status(401).send({message:"Unauthorized"})
+         }
+         console.log('value in the token : ',decoded);
+         req.user = decoded;
+    })
+    next();
+}
+
+
 
 async function run() {
   try {
@@ -80,7 +105,7 @@ async function run() {
 
     //auth api
 
-    app.post('/jwt', async(req,res)=>{
+    app.post('/jwt',logger, async(req,res)=>{
         const userEmail = req.body.email;
         console.log('userEmail recieved in jwt post',userEmail);
 
@@ -142,7 +167,7 @@ async function run() {
         const query = BlogsCollection.find();
         const r = await query.toArray();
 
-        console.log('token in getBlogs received: ',req.cookies.token);
+        // console.log('token in getBlogs received: ',req.cookies.token);
 
         res.send(r);
     })
@@ -234,9 +259,11 @@ async function run() {
 
     // get all wishlist data
 
-    app.get('/getWishlist/:userEmail', async(req,res)=>{
+    app.get('/getWishlist/:userEmail',logger,verifyToken, async(req,res)=>{
+        console.log('User in valied token in getWishlist received: ',req.user);
+
         const email = req.params.userEmail;
-        console.log(email);
+        // console.log(email);
         const cursor = {userEmail : email}
 
         const query = WishedCollection.find(cursor);
@@ -253,7 +280,10 @@ async function run() {
 
 
     //update own art
-    app.put('/update/:id', async(req,res)=>{
+    app.put('/update/:id',logger,verifyToken, async(req,res)=>{
+
+            // console.log('token in update  received: ',req.cookies.token);
+
         const id = req.params.id;
         const blog = req.body;
 
