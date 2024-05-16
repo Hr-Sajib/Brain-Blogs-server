@@ -54,7 +54,10 @@ const client = new MongoClient(uri, {
 });
 
 
-//midllewires
+
+
+
+//midllewires__Varify__Tokens______________________________________________________________________________
 const logger =async(req,res,next)=>{
     console.log('called  ',req.host, req.originalUrl);
     next();
@@ -76,6 +79,14 @@ const verifyToken = async(req,res,next)=>{
     })
     next();
 }
+
+
+
+
+
+
+
+
 
 
 
@@ -166,9 +177,6 @@ async function run() {
     app.get('/getBlogs', async(req,res)=>{
         const query = BlogsCollection.find();
         const r = await query.toArray();
-
-        // console.log('token in getBlogs received: ',req.cookies.token);
-
         res.send(r);
     })
 
@@ -188,22 +196,43 @@ async function run() {
         res.send(r);
     })
 
-    //get searched blog
-    // app.get('getSearchedBlog/:text',async(req,res)=>{
-    //         const searchText = req.params.text;
-            
-    //         // Perform text search using MongoDB's $text operator
-    //         const query = {
-    //             $text: {
-    //                 $search: searchText
-    //         }
-    //     };
-    //     const cursor = BlogsCollection.find(query);
-    //     const results = await cursor.toArray();
 
-    //     res.send(results);
+
+
+
+    
+
+
+
+
+    //get searched blog_________________________________________________________________
+app.get('/getSearchedBlog/:text', async (req, res) => {
+    try {
+        const searchText = req.params.text;
         
-    // })
+        // Perform text search using MongoDB's $regex operator
+        const query = {
+            $or: [
+                { title: { $regex: searchText, $options: 'i' } }, // Case-insensitive search on title
+                { short_description: { $regex: searchText, $options: 'i' } }, // Case-insensitive search on short_description
+                { long_description: { $regex: searchText, $options: 'i' } } // Case-insensitive search on long_description
+            ]
+        };
+        const cursor = BlogsCollection.find(query);
+        const results = await cursor.toArray();
+        
+        res.send(results);
+    } catch (error) {
+        console.error("Error searching for blogs:", error);
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+});
+
+
+
+
+
+
 
 
 
@@ -217,6 +246,12 @@ async function run() {
     })
 
     // get comments of specific blog
+
+
+
+
+
+    
     app.get('/getComments/:id', async(req,res)=>{
         const id = req.params.id;
         
@@ -257,13 +292,23 @@ async function run() {
 
 
 
+
+
+
+
+
+
+
+
     // get all wishlist data
 
-    app.get('/getWishlist/:userEmail',logger,verifyToken, async(req,res)=>{
+    app.get('/getWishlist/:userEmail',logger, async(req,res)=>{
+
+
         console.log('User in valied token in getWishlist received: ',req.user);
 
         const email = req.params.userEmail;
-        // console.log(email);
+        console.log('mail: ',email);
         const cursor = {userEmail : email}
 
         const query = WishedCollection.find(cursor);
@@ -280,9 +325,8 @@ async function run() {
 
 
     //update own art
-    app.put('/update/:id',logger,verifyToken, async(req,res)=>{
+    app.put('/update/:id',logger, async(req,res)=>{
 
-            // console.log('token in update  received: ',req.cookies.token);
 
         const id = req.params.id;
         const blog = req.body;
