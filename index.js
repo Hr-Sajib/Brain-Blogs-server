@@ -57,34 +57,6 @@ const client = new MongoClient(uri, {
 
 
 
-//midllewires__Varify__Tokens______________________________________________________________________________
-const logger =async(req,res,next)=>{
-    console.log('called  ',req.host, req.originalUrl);
-    next();
-}
-
-const verifyToken = async(req,res,next)=>{
-    const token = req.cookies?.token;
-    console.log("middleware token : ",token);
-
-    if(!token){
-        return res.status(401).send({message:'Not Authorized'})
-    }
-    jwt.verify(token, process.env.access_token_secret, (err,decoded)=>{
-         if(err){
-            return res.status(401).send({message:"Unauthorized"})
-         }
-         console.log('value in the token : ',decoded);
-         req.user = decoded;
-    })
-    next();
-}
-
-
-
-
-
-
 
 
 
@@ -116,7 +88,7 @@ async function run() {
 
     //auth api
 
-    app.post('/jwt',logger, async(req,res)=>{
+    app.post('/jwt', async(req,res)=>{
         const userEmail = req.body.email;
         console.log('userEmail recieved in jwt post',userEmail);
 
@@ -158,7 +130,6 @@ async function run() {
 
     
 
-    // add blog
     app.post('/addBlogs', async(req,res)=>{
         const blog = req.body;
         
@@ -173,7 +144,6 @@ async function run() {
 
 
 
-    // get all blogs
     app.get('/getBlogs', async(req,res)=>{
         const query = BlogsCollection.find();
         const r = await query.toArray();
@@ -186,7 +156,6 @@ async function run() {
 
 
 
-    // get specific blog
     app.get('/getBlogDetails/:id', async(req, res)=>{
         const id = req.params.id;
 
@@ -205,17 +174,17 @@ async function run() {
 
 
 
-    //get searched blog_________________________________________________________________
+  
 app.get('/getSearchedBlog/:text', async (req, res) => {
     try {
         const searchText = req.params.text;
         
-        // Perform text search using MongoDB's $regex operator
+        
         const query = {
             $or: [
-                { title: { $regex: searchText, $options: 'i' } }, // Case-insensitive search on title
-                { short_description: { $regex: searchText, $options: 'i' } }, // Case-insensitive search on short_description
-                { long_description: { $regex: searchText, $options: 'i' } } // Case-insensitive search on long_description
+                { title: { $regex: searchText, $options: 'i' } }, 
+                { short_description: { $regex: searchText, $options: 'i' } }, 
+                { long_description: { $regex: searchText, $options: 'i' } } 
             ]
         };
         const cursor = BlogsCollection.find(query);
@@ -236,7 +205,6 @@ app.get('/getSearchedBlog/:text', async (req, res) => {
 
 
 
-    // add comment
     app.post('/addComment', async(req,res)=>{
         const comment = req.body;
 
@@ -245,7 +213,6 @@ app.get('/getSearchedBlog/:text', async (req, res) => {
 
     })
 
-    // get comments of specific blog
 
 
 
@@ -268,7 +235,6 @@ app.get('/getSearchedBlog/:text', async (req, res) => {
 
 
 
-    // wishlist add blogs
 
     app.put('/addToWishlist', async(req,res)=>{
         const newWished = req.body;
@@ -300,9 +266,8 @@ app.get('/getSearchedBlog/:text', async (req, res) => {
 
 
 
-    // get all wishlist data
 
-    app.get('/getWishlist/:userEmail',logger, async(req,res)=>{
+    app.get('/getWishlist/:userEmail', async(req,res)=>{
 
 
         console.log('User in valied token in getWishlist received: ',req.user);
@@ -324,8 +289,7 @@ app.get('/getSearchedBlog/:text', async (req, res) => {
 
 
 
-    //update own art
-    app.put('/update/:id',logger, async(req,res)=>{
+    app.put('/update/:id', async(req,res)=>{
 
 
         const id = req.params.id;
